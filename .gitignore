@@ -1,59 +1,37 @@
-# ========================
-# General Project Ignores
-# ========================
-.devcontainer/       # Development container configurations (e.g., VS Code Dev Containers)
-.DS_Store            # macOS system files
-Thumbs.db            # Windows thumbnail cache files
-Desktop.ini          # Windows desktop customization files
-.idea/               # JetBrains IDEs (PyCharm, WebStorm, IntelliJ)
-*.iml                # JetBrains IDE module files
-.vscode/             # VS Code editor specific settings (consider if you want to include some shared config)
-*.log                # General log files
-logs/                # Directory for log files
+# Python related
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+env/
 
-# ========================
-# Python (FastAPI Backend)
-# ========================
-__pycache__/         # Python bytecode cache directories
-*.pyc                # Compiled Python files
-*.pyo                # Optimized Python files
-*.pyd                # Windows specific Python modules
-.env                 # Main project .env file (if you have one at root)
-Code/backend/.env    # Specific backend .env file (good you have this!)
-venv/                # Common virtual environment directory names
-.venv/               # Common virtual environment directory names
-env/                 # Another common virtual environment directory name
-*.sqlite3            # SQLite database files (e.g., db.sqlite3)
-*.db                 # Generic database files (if you use other file-based DBs)
-/Code/backend/transcripts/ # Explicitly ignore the transcripts directory
-/Code/backend/vectorstore/ # Explicitly ignore the vectorstore directory (good you have this!)
+# Backend Persistent Data (do NOT commit these)
+# These directories are created by your application for transcripts and vector store.
+# They should NOT be committed to Git. Docker volumes will handle persistence.
+Code/backend/transcripts/
+Code/backend/vectorstore/
 
-# Packaging and Distribution
-build/               # Build artifact directory
-dist/                # Distribution directory
-*.egg-info/          # Python egg info directories
-.eggs/               # Python egg files
-htmlcov/             # Coverage reports (e.g., from pytest-cov)
-.tox/                # Tox test automation directory
-.coverage            # Coverage data file
-.pytest_cache/       # Pytest cache directory
+# Environment variables
+.env
+.env.*.local
 
-# ========================
-# Node.js (React Frontend)
-# ========================
-Code/frontend/node_modules/ # Node.js dependency directory (good you have this!)
-Code/frontend/build/        # React build output directory
-Code/frontend/dist/         # Vite or other bundler output directory
-Code/frontend/.env.local         # Local environment variables
-Code/frontend/.env.development.local
-Code/frontend/.env.test.local
-Code/frontend/.env.production.local
-Code/frontend/.env*.local    # Catch all local .env files within frontend
-npm-debug.log* # NPM debug logs
-yarn-debug.log* # Yarn debug logs
-yarn-error.log* # Yarn error logs
-.pnp                 # Yarn Plug'n'Play directory
-.pnp.js              # Yarn Plug'n'Play file
-.cache/              # General cache directory for frontend tools
-.eslintcache         # ESLint cache file
-.parcel-cache/       # Parcel bundler cache
+# Docker related (ignore temporary files, but NOT Dockerfiles or docker-compose.yml)
+# The .dockerignore files themselves should be committed.
+# Docker Desktop specific files
+.docker/
+docker-compose.override.yml # If you use an override for local dev
+
+# VS Code Dev Containers related (the .devcontainer/ folder itself SHOULD be committed)
+# But ignore user-specific or temporary files within it if necessary
+# .devcontainer/*.backup
+# .devcontainer/.devcontainer.log
+
+# Operating System generated files
+.DS_Store # macOS
+Thumbs.db # Windows
+desktop.ini # Windows
+
+# Generic log files
+*.log
