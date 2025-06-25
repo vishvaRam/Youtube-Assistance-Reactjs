@@ -1,37 +1,78 @@
-# Python related
-__pycache__/
-*.pyc
-.pytest_cache/
-.mypy_cache/
-.venv/
-venv/
-env/
-
-# Backend Persistent Data (do NOT commit these)
-# These directories are created by your application for transcripts and vector store.
-# They should NOT be committed to Git. Docker volumes will handle persistence.
-Code/backend/transcripts/
-Code/backend/vectorstore/
+# ====================================
+# General Ignores (apply project-wide)
+# ====================================
 
 # Environment variables
 .env
 .env.*.local
 
-# Docker related (ignore temporary files, but NOT Dockerfiles or docker-compose.yml)
-# The .dockerignore files themselves should be committed.
-# Docker Desktop specific files
-.docker/
-docker-compose.override.yml # If you use an override for local dev
-
-# VS Code Dev Containers related (the .devcontainer/ folder itself SHOULD be committed)
-# But ignore user-specific or temporary files within it if necessary
-# .devcontainer/*.backup
-# .devcontainer/.devcontainer.log
-
 # Operating System generated files
-.DS_Store # macOS
-Thumbs.db # Windows
-desktop.ini # Windows
+.DS_Store    # macOS directory metadata
+Thumbs.db    # Windows thumbnail cache
+desktop.ini  # Windows folder customization
+
+# IDE / Editor specific files
+# VS Code (the .devcontainer/ folder itself SHOULD be committed for Dev Containers)
+.vscode/     # Ignore user-specific VS Code settings, but keep .devcontainer/
+# Uncomment specific files if you want to commit shared settings:
+# !.vscode/settings.json
+# !.vscode/extensions.json
+# !.vscode/launch.json
+# !.vscode/tasks.json
+
+# Docker related
+.docker/
+docker-compose.override.yml # If you use an override for local development
+# Docker build context temporary files
+.dockerignore # This file itself should be committed
 
 # Generic log files
 *.log
+
+# ====================================
+# Backend Specific Ignores (Code/backend/)
+# ====================================
+
+# Python bytecode and caches
+Code/backend/__pycache__/
+Code/backend/*.pyc
+Code/backend/.pytest_cache/
+Code/backend/.mypy_cache/
+
+# Python virtual environments
+Code/backend/.venv/
+Code/backend/venv/
+Code/backend/env/
+
+# Backend Persistent Data (created by the app, NOT committed)
+# These directories are mounted as volumes in Docker Compose.
+Code/backend/transcripts/
+Code/backend/vectorstore/
+
+# ====================================
+# Frontend Specific Ignores (Code/frontend/)
+# ====================================
+
+# Node.js and npm specific
+Code/frontend/node_modules/
+Code/frontend/*.tgz
+Code/frontend/.npm/
+Code/frontend/npm-debug.log*
+Code/frontend/yarn-debug.log*
+Code/frontend/yarn-error.log*
+
+# React build output
+Code/frontend/build/
+
+# Frontend environment variables (local overrides)
+Code/frontend/.env.local
+Code/frontend/.env.development.local
+Code/frontend/.env.test.local
+Code/frontend/.env.production.local
+
+# Test coverage reports
+Code/frontend/coverage/
+
+# IDE/Editor specific for frontend (if any)
+Code/frontend/.idea/
+Code/frontend/*.iml
