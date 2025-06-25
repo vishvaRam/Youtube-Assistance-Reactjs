@@ -23,16 +23,14 @@ services:
 
   frontend:
     build:
-      context: ./Code/frontend # Path to your frontend Dockerfile
-      dockerfile: Dockerfile   # Will use the modified Dockerfile above
+      context: ./Code/frontend
+      dockerfile: Dockerfile # This would now be the development Dockerfile
     container_name: yt-frontend
     ports:
-      - "3000:80" # Map host port 3000 to container port 3000 (React Dev Server)
+      - "3000:3000" # Map host port 3000 to container port 3000 (React Dev Server)
     volumes:
-      # Mount the entire frontend code directory for live changes
       - ./Code/frontend:/app/frontend
-      # Exclude node_modules from the host to prevent conflicts and slow downs
-      - /app/frontend/node_modules
+      - /app/frontend/node_modules # Important to exclude node_modules from host mount
     depends_on:
       backend:
         condition: service_healthy
@@ -40,17 +38,16 @@ services:
       - yt_network
     environment:
       # If your React app needs to know the backend URL, you can pass it here.
-      # Usually, for development, 'localhost' works if ports are mapped correctly.
-      # REACT_APP_API_BASE_URL: http://localhost:8000
+      # When running locally, you'd connect to the backend service name.
+      REACT_APP_API_BASE_URL: http://backend:8000 # Use service name for inter-container communication
       CHOKIDAR_USEPOLLING: "true" # Important for hot-reloading on some Docker setups
     healthcheck:
       # Change healthcheck to target the React dev server
-      test: ["CMD", "curl", "-f", "http://localhost"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"] # Dev server typically on 3000
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 20s # Give the React dev server time to start
-
+      start_period: 20s
 networks:
   yt_network:
     driver: bridge

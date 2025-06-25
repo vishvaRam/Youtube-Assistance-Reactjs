@@ -31,7 +31,8 @@ app = FastAPI(
 # --- CORS Configuration ---
 origins = [
     "http://localhost:3000",  # Your frontend's address
-    "http://127.0.0.1:3000",  # Another common local address
+    "http://127.0.0.1:3000", 
+    "http://172.20.0.3:3000,"# Another common local address
     # Add any other origins your frontend might run on, e.g., for deployment
     # If deploying, replace localhost with your actual frontend domain
 ]
