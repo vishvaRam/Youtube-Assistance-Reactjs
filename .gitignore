@@ -1,0 +1,13 @@
+.devcontainer/
+__pycache__/
+Code/__pycache__/
+Code/backend/__pycache__/
+*.pyc
+.DS_Store
+.env
+Code/backend/.env
+Code/backend/vectorstore/
+
+Code/frontend/node_modules
+
+

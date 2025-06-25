@@ -1,0 +1,37 @@
+services:
+  backend:
+    build:
+      context: ./Code/backend # Path to your backend Dockerfile
+      dockerfile: Dockerfile
+    container_name: yt-backend
+    ports:
+      - "8000:8000" # Map host port 8000 to container port 8000 (FastAPI)
+    volumes:
+      # Mount backend code for development/reloads (changes on host reflect in container)
+      - ./Code/backend:/app/backend
+      # Ensure transcripts and vectorstore persist outside the container
+      - ./Code/backend/transcripts:/app/backend/transcripts
+      - ./Code/backend/vectorstore:/app/backend/vectorstore
+    environment:
+      PYTHONUNBUFFERED: 1 # For real-time Python logs
+    networks:
+      - yt_network
+
+  frontend:
+    build:
+      context: ./Code/frontend # Path to your frontend Dockerfile
+      dockerfile: Dockerfile
+    container_name: yt-frontend
+    ports:
+      - "3000:80" # Map host port 3000 to container port 80 (Nginx)
+    depends_on:
+      - backend # Ensure backend starts before frontend
+    networks:
+      - yt_network
+    # No 'environment' block needed here for REACT_APP_API_BASE_URL
+    # because App.js is hardcoded to http://localhost:8000,
+    # which will reach the backend via the host's port mapping.
+
+networks:
+  yt_network:
+    driver: bridge

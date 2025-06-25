@@ -1,0 +1,13 @@
+youtube-transcript-api
+langchain
+langchain-google-genai
+google-generativeai
+langchain-community
+pydantic
+faiss-cpu
+typing-extensions
+numpy
+uvicorn
+fastapi
+python-dotenv # Good for local .env files, though not strictly used with direct API key input here
+python-multipart # Needed for FastAPI form data handling, good to include
