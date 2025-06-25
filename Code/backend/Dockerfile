@@ -7,6 +7,8 @@ WORKDIR /app/backend
 # Copy just the requirements file first to leverage Docker cache
 COPY requirements.txt .
 
+RUN apt-get update && apt-get install -y curl
+
 # Install Python dependencies, including uvicorn for FastAPI
 RUN pip install --no-cache-dir -r requirements.txt \
     && pip install --no-cache-dir "uvicorn[standard]"

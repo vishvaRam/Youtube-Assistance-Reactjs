@@ -8,6 +8,7 @@ Code/backend/__pycache__/
 Code/backend/.env
 Code/backend/vectorstore/
 
-Code/frontend/node_modules
+
+Code/frontend/node_modules/
 
 

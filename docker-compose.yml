@@ -1,36 +1,55 @@
 services:
   backend:
     build:
-      context: ./Code/backend # Path to your backend Dockerfile
+      context: ./Code/backend
       dockerfile: Dockerfile
     container_name: yt-backend
     ports:
-      - "8000:8000" # Map host port 8000 to container port 8000 (FastAPI)
+      - "8000:8000"
     volumes:
-      # Mount backend code for development/reloads (changes on host reflect in container)
       - ./Code/backend:/app/backend
-      # Ensure transcripts and vectorstore persist outside the container
       - ./Code/backend/transcripts:/app/backend/transcripts
       - ./Code/backend/vectorstore:/app/backend/vectorstore
     environment:
-      PYTHONUNBUFFERED: 1 # For real-time Python logs
+      PYTHONUNBUFFERED: 1
     networks:
       - yt_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   frontend:
     build:
       context: ./Code/frontend # Path to your frontend Dockerfile
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile   # Will use the modified Dockerfile above
     container_name: yt-frontend
     ports:
-      - "3000:80" # Map host port 3000 to container port 80 (Nginx)
+      - "3000:80" # Map host port 3000 to container port 3000 (React Dev Server)
+    volumes:
+      # Mount the entire frontend code directory for live changes
+      - ./Code/frontend:/app/frontend
+      # Exclude node_modules from the host to prevent conflicts and slow downs
+      - /app/frontend/node_modules
     depends_on:
-      - backend # Ensure backend starts before frontend
+      backend:
+        condition: service_healthy
     networks:
       - yt_network
-    # No 'environment' block needed here for REACT_APP_API_BASE_URL
-    # because App.js is hardcoded to http://localhost:8000,
-    # which will reach the backend via the host's port mapping.
+    environment:
+      # If your React app needs to know the backend URL, you can pass it here.
+      # Usually, for development, 'localhost' works if ports are mapped correctly.
+      # REACT_APP_API_BASE_URL: http://localhost:8000
+      CHOKIDAR_USEPOLLING: "true" # Important for hot-reloading on some Docker setups
+    healthcheck:
+      # Change healthcheck to target the React dev server
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s # Give the React dev server time to start
 
 networks:
   yt_network:
