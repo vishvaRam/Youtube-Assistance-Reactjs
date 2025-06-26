@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Video, MessageCircle, Send, Trash2, Play, Eye, EyeOff, Loader2, Youtube, Bot, User, AlertCircle, Info } from 'lucide-react';
+// import ReactMarkdown from 'react-markdown'; 
+// import remarkGfm from 'remark-gfm'; 
 
 const API_BASE_URL = 'http://localhost:8000';
 
@@ -138,13 +140,47 @@ function App() {
         }
     };
 
-    const clearChat = () => {
+    const clearChat = async () => { // Made async to await backend call
         const confirmClear = window.confirm("Are you sure you want to clear the entire chat history and session?");
         if (confirmClear) {
+            // First, clear frontend state for immediate UI feedback
             setChatHistory([]);
-            setSessionId(null);
             setVideoUrlDisplay(null);
+
+            // Attempt to clear session on the backend if a session ID exists
+            if (sessionId) {
+                try {
+                    setChatHistory(prev => [...prev, { role: 'info', content: 'Clearing session on backend...' }]);
+                    const response = await fetch(`${API_BASE_URL}/clear_session/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ session_id: sessionId }),
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        // Even if backend fails, proceed to clear frontend state, but log error
+                        throw new Error(data.detail || 'Failed to clear session on backend');
+                    }
+                    // Remove the "Clearing session..." message
+                    setChatHistory(prev => prev.filter(msg => msg.content !== 'Clearing session on backend...'));
+                    setChatHistory(prev => [...prev, { role: 'info', content: 'Session successfully cleared on backend.' }]);
+
+                } catch (error) {
+                    console.error('Error clearing backend session:', error);
+                    // Remove the "Clearing session..." message
+                    setChatHistory(prev => prev.filter(msg => msg.content !== 'Clearing session on backend...'));
+                    setChatHistory(prev => [...prev, { role: 'error', content: `Failed to clear backend session: ${error.message}` }]);
+                }
+            }
+
+            // Finally, clear local storage and set sessionId to null
+            // This ensures a complete reset on the frontend, regardless of backend success
             localStorage.clear();
+            setSessionId(null);
         }
     };
 
@@ -186,7 +222,7 @@ function App() {
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
             <div className="flex h-screen">
                 {/* Sidebar */}
-                <div className="w-96 bg-white/80 backdrop-blur-sm border-r border-gray-200 shadow-xl flex flex-col">
+                <div className="w-2/5 bg-white/80 backdrop-blur-sm border-r border-gray-200 shadow-xl flex flex-col">
                     {/* Header */}
                     <div className="p-6 border-b border-gray-100">
                         <div className="flex items-center gap-3 mb-2">
@@ -277,13 +313,14 @@ function App() {
                                 <div className="bg-gray-100 rounded-xl overflow-hidden shadow-lg">
                                     <iframe
                                         width="100%"
-                                        height="200"
+                                        // height="500"
                                         src={`https://www.youtube.com/embed/${displayVideoId}`}
                                         title="YouTube video player"
                                         frameBorder="0"
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                         allowFullScreen
                                         className="rounded-xl"
+                                        style={{ aspectRatio: '16 / 9' }} 
                                     />
                                 </div>
                             </div>
@@ -316,7 +353,7 @@ function App() {
                             </div>
                             <div>
                                 <h2 className="text-xl font-bold text-gray-800">Chat Interface</h2>
-                                <p className="text-sm text-gray-600">
+                                <p className="text-xl text-gray-600">
                                     {sessionId ? 'Ask questions about your video' : 'Process a video to start chatting'}
                                 </p>
                             </div>
@@ -356,7 +393,7 @@ function App() {
                                             ? 'bg-red-50 border border-red-200 text-red-800'
                                             : 'bg-yellow-50 border border-yellow-200 text-yellow-800'
                                     }`}>
-                                        <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                                        <p className="text-lg leading-relaxed whitespace-pre-wrap">{message.content}</p>
                                     </div>
                                     {message.role === 'user' && (
                                         <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white">
@@ -378,7 +415,7 @@ function App() {
                                     value={question}
                                     onChange={(e) => setQuestion(e.target.value)}
                                     onKeyPress={(e) => e.key === 'Enter' && !isSending && sendMessage()}
-                                    className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                    className="text-lg flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                     disabled={isSending}
                                 />
                                 <button
