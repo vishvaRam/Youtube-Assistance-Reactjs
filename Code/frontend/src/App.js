@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Video, MessageCircle, Send, Trash2, Play, Eye, EyeOff, Loader2, Youtube, Bot, User, AlertCircle, Info } from 'lucide-react';
-// import ReactMarkdown from 'react-markdown'; 
+// import ReactMarkdown from 'react-markdown';
 // import remarkGfm from 'remark-gfm'; 
 
 const API_BASE_URL = 'http://localhost:8000';
@@ -227,7 +227,7 @@ function App() {
                     <div className="p-6 border-b border-gray-100">
                         <div className="flex items-center gap-3 mb-2">
                             <div className="p-2 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg">
-                                <Youtube className="w-6 h-6 text-white" />
+                                <Youtube className="w-8 h-8 text-white" />
                             </div>
                             <h1 className="text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
                                 YouTube Video Chat
@@ -240,7 +240,7 @@ function App() {
                     <div className="p-6 space-y-6 flex-1 overflow-y-auto">
                         {/* API Key Input */}
                         <div className="space-y-2">
-                            <label className="block text-sm font-semibold text-gray-700">
+                            <label className="block text-lg font-semibold text-gray-700">
                                 Gemini API Key
                             </label>
                             <div className="relative">
@@ -249,7 +249,7 @@ function App() {
                                     placeholder="Enter your Gemini API Key"
                                     value={apiKey}
                                     onChange={(e) => setApiKey(e.target.value)}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pr-12"
+                                    className="text-lg w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pr-12"
                                 />
                                 <button
                                     type="button"
@@ -329,10 +329,10 @@ function App() {
                         {/* Instructions */}
                         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                             <h3 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
-                                <Info className="w-5 h-5" />
+                                <Info className="w-5 h-5 text-xl" />
                                 How to use
                             </h3>
-                            <ol className="text-sm text-blue-700 space-y-1 list-decimal list-inside">
+                            <ol className="text-lg text-blue-700 space-y-1 list-decimal list-inside">
                                 <li>Enter your Gemini API key</li>
                                 <li>Paste a YouTube video URL</li>
                                 <li>Click "Process Video"</li>
@@ -349,7 +349,7 @@ function App() {
                     <div className="p-6 border-b border-gray-200 bg-white/80 backdrop-blur-sm">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg">
-                                <MessageCircle className="w-6 h-6 text-white" />
+                                <MessageCircle className="w-8 h-8 text-white" />
                             </div>
                             <div>
                                 <h2 className="text-xl font-bold text-gray-800">Chat Interface</h2>
@@ -368,7 +368,7 @@ function App() {
                                     <MessageCircle className="w-10 h-10 text-blue-500" />
                                 </div>
                                 <h3 className="text-xl font-semibold text-gray-700 mb-2">Ready to Chat!</h3>
-                                <p className="text-gray-500 max-w-md mx-auto">
+                                <p className="text-lg text-gray-500 max-w-md mx-auto">
                                     Process a YouTube video first to start having conversations about its content.
                                 </p>
                             </div>
