@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Video, MessageCircle, Send, Trash2, Play, Eye, EyeOff, Loader2, Youtube, Bot, User, AlertCircle, Info } from 'lucide-react';
-// import ReactMarkdown from 'react-markdown';
-// import remarkGfm from 'remark-gfm'; 
+import { Video, MessageCircle, Send, Trash2, Play, Eye, EyeOff, Loader2, Bot, User, AlertCircle, Info } from 'lucide-react';
+
 
 const API_BASE_URL = 'http://localhost:8000';
 
@@ -94,6 +93,42 @@ function App() {
             setIsProcessing(false);
         }
     };
+
+    const formatBotMessage = (content) => {
+        // Process block-level elements that depend on newlines first
+        content = content
+            // Headers (h1, h2, h3) - Order from most specific to least specific
+            .replace(/\n# (.*)/g, '<h1 class="text-2xl font-bold mt-4 mb-2">$1</h1>')
+            .replace(/\n## (.*)/g, '<h2 class="text-xl font-semibold mt-4 mb-2">$1</h2>')
+            .replace(/\n### (.*)/g, '<h3 class="text-lg font-semibold mt-3 mb-2">$1</h3>')
+            // Numbered lists - Ensure these are processed before general bullet points if there's a conflict
+            .replace(/\n(\d+)\. /g, '<br>$1. ') // Using <br> here to ensure a line break is kept
+            // Bullet points (both * and -)
+            .replace(/\n\* /g, '<br>• ') // Using <br> here to ensure a line break is kept
+            .replace(/\n- /g, '<br>• '); // Using <br> here to ensure a line break is kept
+
+        // Process inline elements and general text formatting
+        content = content
+            // Bold text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            // Italic text
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            // Inline code
+            .replace(/`(.*?)`/g, '<code class="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">$1</code>')
+            // Links [text](url)
+            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline">$1</a>')
+
+        // Finally, handle general line breaks
+        content = content
+            // Convert double newlines to double HTML breaks for paragraph breaks
+            .replace(/\n\n/g, '<br><br>')
+            // Convert single newlines to single HTML breaks
+            .replace(/\n/g, '<br>');
+
+        return content;
+    };
+
+    
 
     const sendMessage = async () => {
         if (!question.trim()) return;
@@ -227,13 +262,16 @@ function App() {
                     <div className="p-6 border-b border-gray-100">
                         <div className="flex items-center gap-3 mb-2">
                             <div className="p-2 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg">
-                                <Youtube className="w-8 h-8 text-white" />
+                                <Video className="w-8 h-8 text-white" />
                             </div>
-                            <h1 className="text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-                                YouTube Video Chat
-                            </h1>
+                            {/* NEW: Added a div to wrap the h1 and p */}
+                            <div>
+                                <h1 className="text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                                    YouTube Video Chat
+                                </h1>
+                                <p className="text-lg text-gray-600">Chat with any YouTube video using AI</p>
+                            </div>
                         </div>
-                        <p className="text-sm text-gray-600">Chat with any YouTube video using AI</p>
                     </div>
 
                     {/* Form Section */}
@@ -271,37 +309,41 @@ function App() {
                                 value={youtubeUrl}
                                 onChange={(e) => setYoutubeUrl(e.target.value)}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
-                                rows={3}
+                                rows={1}
                             />
                         </div>
 
                         {/* Process Button */}
-                        <button
-                            onClick={processVideo}
-                            disabled={isProcessing || !youtubeUrl || !apiKey}
-                            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
-                        >
-                            {isProcessing ? (
-                                <>
-                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                    Processing...
-                                </>
-                            ) : (
-                                <>
-                                    <Play className="w-5 h-5" />
-                                    Process Video
-                                </>
-                            )}
-                        </button>
+                        {/* Process and Clear Buttons Container */}
+                        <div className="flex gap-4"> {/* Added flex and gap for spacing */}
+                            {/* Process Button */}
+                            <button
+                                onClick={processVideo}
+                                disabled={isProcessing || !youtubeUrl || !apiKey}
+                                className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+                            >
+                                {isProcessing ? (
+                                    <>
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                        Processing...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Play className="w-5 h-5" />
+                                        Process Video
+                                    </>
+                                )}
+                            </button>
 
-                        {/* Clear Chat Button */}
-                        <button
-                            onClick={clearChat}
-                            className="w-full bg-gradient-to-r from-gray-500 to-gray-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-gray-600 hover:to-gray-700 transition-all duration-200 flex items-center justify-center gap-2"
-                        >
-                            <Trash2 className="w-4 h-4" />
-                            Clear Chat & Session
-                        </button>
+                            {/* Clear Chat Button */}
+                            <button
+                                onClick={clearChat}
+                                className="flex-1 bg-gradient-to-r from-gray-500 to-gray-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-gray-600 hover:to-gray-700 transition-all duration-200 flex items-center justify-center gap-2"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                                Clear Chat & Session
+                            </button>
+                        </div>
 
                         {/* Video Preview */}
                         {displayVideoId && (
@@ -393,7 +435,7 @@ function App() {
                                             ? 'bg-red-50 border border-red-200 text-red-800'
                                             : 'bg-yellow-50 border border-yellow-200 text-yellow-800'
                                     }`}>
-                                        <p className="text-lg leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                                        <p className="text-lg leading-relaxed whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: formatBotMessage(message.content) }}/>
                                     </div>
                                     {message.role === 'user' && (
                                         <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white">
