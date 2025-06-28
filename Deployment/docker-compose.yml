@@ -1,0 +1,48 @@
+services:
+  backend:
+    image: vishva123/youtube-assistance-python-backend:v1.0.0
+    container_name: yt-backend
+    ports:
+      - "8000:8000"
+    environment:
+      PYTHONUNBUFFERED: 1
+    networks:
+      - yt_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    # In a true "production" deployment without host volumes,
+    # you might want to consider a restart policy.
+    # restart: unless-stopped 
+
+  frontend:
+    image: vishva123/youtube-assistance-reactjs-frontend:v1.0.0
+    container_name: yt-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - yt_network
+    environment:
+      REACT_APP_API_BASE_URL: http://backend:8000
+      # CHOKIDAR_USEPOLLING: "true" # This is usually for development hot-reloading
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    # In a true "production" deployment, you would typically serve the frontend
+    # with a production web server (like Nginx) and not rely on the Node.js dev server.
+    # This CMD starts a dev server. For production, your frontend Dockerfile
+    # would likely build the static assets and then your CMD would serve them.
+    # restart: unless-stopped
+
+networks:
+  yt_network:
+    driver: bridge
