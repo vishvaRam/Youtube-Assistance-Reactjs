@@ -29,7 +29,7 @@ VECTOR_DB_DIR = "vectorstore"
 TRANSCRIPT_DIR = "transcripts"
 
 # In-memory store for session histories
-store = {}
+store = {} # This global store is accessed by api.py now
 
 # -------------------------------
 # Helper Functions
@@ -46,7 +46,10 @@ def load_transcript_files(directory: str = TRANSCRIPT_DIR) -> List[Document]:
     """Load all transcript text files into LangChain Documents with metadata"""
     documents = []
     if not os.path.exists(directory):
-        raise FileNotFoundError(f"Transcript directory '{directory}' does not exist.")
+        # If directory doesn't exist, it means it was just cleared by api.py
+        # or no transcripts have been generated yet.
+        print(f"Transcript directory '{directory}' does not exist or is empty.")
+        return [] # Return empty list if directory is not found
 
     for filename in os.listdir(directory):
         if filename.endswith(".txt"):
@@ -64,35 +67,12 @@ def load_transcript_files(directory: str = TRANSCRIPT_DIR) -> List[Document]:
 
 
 def create_vector_store(documents: List[Document], api_key: str, persist_dir: str = VECTOR_DB_DIR):
-    """Create or load vector store with Gemini embeddings"""
+    """Create a new vector store with Gemini embeddings"""
     if not documents:
         raise ValueError("No documents provided to create vector store")
 
-    faiss_index_path = os.path.join(persist_dir, "index.faiss")
-
-    # If the vector store's primary index file exists, try to load it
-    if os.path.exists(faiss_index_path):
-        print(f"Loading existing vector store from {persist_dir}...")
-        embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=api_key)
-        try:
-            # It's important to be cautious with allow_dangerous_deserialization=True
-            vector_store = FAISS.load_local(persist_dir, embeddings, allow_dangerous_deserialization=True)
-            print("Done loading existing vector store.")
-            return vector_store
-        except Exception as e:
-            # If loading fails, print error and proceed to create new
-            print(f"Error loading existing vector store from '{persist_dir}': {e}. Proceeding to create a new one.")
-            # Clean up potentially corrupted or incomplete files for a fresh start
-            if os.path.exists(persist_dir):
-                print(f"Cleaning up '{persist_dir}' for recreation...")
-                shutil.rmtree(persist_dir) # Remove the directory and its contents
-                os.makedirs(persist_dir, exist_ok=True) # Recreate the empty directory
-    else:
-        print(f"'{faiss_index_path}' not found. Creating new vector store.")
-        # Ensure the directory exists if it's a fresh creation path
-        os.makedirs(persist_dir, exist_ok=True)
-
-
+    # The api.py now ensures that persist_dir is cleared before calling this function.
+    # So, we can directly proceed to create a new vector store.
     print("Creating new vector store...")
     text_splitter = RecursiveCharacterTextSplitter(
         separators=["\n\n", "\n", ". ", "? ", "! "],
@@ -100,27 +80,25 @@ def create_vector_store(documents: List[Document], api_key: str, persist_dir: st
         chunk_overlap=CHUNK_OVERLAP,
         length_function=len
     )
-    
+
     try:
-        # Split documents into chunks
         chunks = text_splitter.split_documents(documents)
         if not chunks:
             raise ValueError("No text chunks created from documents")
-            
+
         print(f"Created {len(chunks)} text chunks")
-        
-        # Create embeddings
+
         embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=api_key)
-        
-        # Create vector store
+
         vector_store = FAISS.from_documents(chunks, embeddings)
-        
-        # Save the vector store (directory should already exist or have been recreated)
+
+        # Ensure the directory exists (api.py already creates it, but good to be safe)
+        os.makedirs(persist_dir, exist_ok=True)
         vector_store.save_local(persist_dir)
         print(f"Vector store saved to {persist_dir}")
-        
+
         return vector_store
-        
+
     except Exception as e:
         print(f"Error creating vector store: {str(e)}")
         raise
@@ -128,7 +106,7 @@ def create_vector_store(documents: List[Document], api_key: str, persist_dir: st
 
 def setup_chatbot(vector_store, api_key: str, verbose: bool = False):
     """Set up conversational chain with custom prompt and message history"""
- 
+
     llm = GoogleGenerativeAI(model="gemini-2.0-flash-lite", temperature=0.6, google_api_key=api_key)
 
     # Custom Prompt Template with Markdown Formatting Instructions
@@ -171,7 +149,6 @@ def setup_chatbot(vector_store, api_key: str, verbose: bool = False):
 
     PROMPT = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
 
-    # Conversational Chain without deprecated args
     chain = ConversationalRetrievalChain.from_llm(
         llm=llm,
         retriever=vector_store.as_retriever(search_kwargs={"k": 6}),
@@ -179,7 +156,6 @@ def setup_chatbot(vector_store, api_key: str, verbose: bool = False):
         verbose=verbose
     )
 
-    # Wrap with message history
     chain_with_history = RunnableWithMessageHistory(
         chain,
         get_session_history,
@@ -202,7 +178,7 @@ def display_sources(response):
 
 
 # -------------------------------
-# Main Application Loop
+# Main Application Loop (for local testing, not used by FastAPI)
 # -------------------------------
 
 def main():
@@ -211,7 +187,6 @@ def main():
         print("Error: GOOGLE_API_KEY not provided!")
         return
 
-    # Configure the Google Generative AI library with the provided API key
     genai.configure(api_key=api_key)
 
     print("Loading transcripts...")
@@ -221,6 +196,10 @@ def main():
         return
 
     print("Building vector database...")
+    # In main(), we still need to ensure the vector store directory is clean
+    if os.path.exists(VECTOR_DB_DIR):
+        shutil.rmtree(VECTOR_DB_DIR)
+    os.makedirs(VECTOR_DB_DIR, exist_ok=True)
     vector_store = create_vector_store(documents, api_key)
 
     print("Setting up chatbot...")
@@ -228,7 +207,7 @@ def main():
 
     print("\n🤖 Chatbot ready! Type 'quit' to exit.\n")
 
-    session_id = "abc123"  # You can make this dynamic per user in web apps
+    session_id = "abc123"
 
     while True:
         query = input("You: ").strip()
@@ -245,9 +224,6 @@ def main():
             )
             answer = result.get("answer", "No answer generated.")
             print(f"\nBot: {answer}")
-
-            # Uncomment to show sources if needed for debugging/inspection
-            # display_sources(result)
 
         except Exception as e:
             print(f"\n⚠️ Error processing request: {str(e)}")

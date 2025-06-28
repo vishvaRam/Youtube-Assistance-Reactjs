@@ -6,6 +6,8 @@
 .env
 .env.*.local
 
+key.txt
+
 # Operating System generated files
 .DS_Store    # macOS directory metadata
 Thumbs.db    # Windows thumbnail cache

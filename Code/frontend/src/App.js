@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Video, MessageCircle, Send, Trash2, Play, Eye, EyeOff, Loader2, Bot, User, AlertCircle, Info } from 'lucide-react';
-
+import { SiYoutube } from 'react-icons/si';
 
 const API_BASE_URL = 'http://localhost:8000';
 
@@ -262,7 +262,7 @@ function App() {
                     <div className="p-6 border-b border-gray-100">
                         <div className="flex items-center gap-3 mb-2">
                             <div className="p-2 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg">
-                                <Video className="w-8 h-8 text-white" />
+                                <SiYoutube className="w-8 h-8 text-white" />
                             </div>
                             {/* NEW: Added a div to wrap the h1 and p */}
                             <div>
